@@ -1,0 +1,16 @@
+import java.util.Scanner;  
+//util is a package
+//Scanner is a class
+
+class UserInput {
+  public static void main(String[] args) {
+	  
+	 //Creating an object ob from scanner class
+    Scanner scan = new Scanner(System.in); 
+	
+    System.out.println("Enter your name: ");
+
+   String userName = scan.nextLine();  
+    //System.out.println("Hi " + userName); 
+  }
+}
