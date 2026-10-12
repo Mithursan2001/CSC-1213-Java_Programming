@@ -1,0 +1,4 @@
+//Write a class in Java to read and print following details.
+	1.Name
+	2.Registration Number
+	3.Age
