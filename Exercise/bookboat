@@ -1,0 +1,306 @@
+-- (a) Create the database named BookBoat with the given relational instances using
+CREATE DATABASE BookBoat;
+USE BookBoat
+
+CREATE TABLE Boat(
+BoatId INT PRIMARY KEY,
+Bname VARCHAR(15),
+Bcolor VARCHAR(10)
+);
+INSERT INTO Boat VALUES
+(101,'Interlake','blue'),
+(102,'Interlake','red'),
+(103,'Clipper','green'),
+(104,'Marine','red');
+
+CREATE TABLE Sailor(
+SailorId INT PRIMARY KEY,
+Sname VARCHAR(15),
+Rating INT,
+Age DECIMAL(3,1)
+);
+INSERT INTO Sailor VALUES
+(22,'Dustin',7,45.0),
+(29,'Brutus',1,33.0),
+(31,'Lubber',8,55.5),
+(32,'Andy',8,25.5),
+(58,'Rusty',10,35.0),
+(64,'Horatio',7,35.0),
+(71,'Zorba',10,16.0),
+(74,'Horatio',9,35.0),
+(85,'Athesh',3,25.5),
+(95,'Bob',3,63.5);
+
+CREATE TABLE Reserves(
+SailorID INT,
+BoatId INT,
+Day DATE,
+PRIMARY KEY(SailorID, BoatId));
+
+INSERT INTO Reserves VALUES
+(22,101,'2018-10-10'),
+(22,102,'2018-10-10'),
+(22,103,'2018-08-10'),
+(22,104,'2018-07-10'),
+(31,102,'2018-10-11'),
+(31,103,'2018-06-11'),
+(31,104,'2018-12-11'),
+(64,101,'2018-05-09'),
+(64,102,'2018-08-09'),
+(74,103,'2018-08-09');
+
+--(b) Write SQL statements for each of the following queries:
+-- i. Display the data definition for each of the relational instances.
+DESC Boat;
++--------+-------------+------+-----+---------+-------+
+| Field  | Type        | Null | Key | Default | Extra |
++--------+-------------+------+-----+---------+-------+
+| BoatId | int(11)     | NO   | PRI | NULL    |       |
+| Bname  | varchar(15) | YES  |     | NULL    |       |
+| Bcolor | varchar(10) | YES  |     | NULL    |       |
++--------+-------------+------+-----+---------+-------+
+
+DESC Sailor;
++----------+--------------+------+-----+---------+-------+
+| Field    | Type         | Null | Key | Default | Extra |
++----------+--------------+------+-----+---------+-------+
+| SailorId | int(11)      | NO   | PRI | NULL    |       |
+| Sname    | varchar(15)  | YES  |     | NULL    |       |
+| Rating   | int(11)      | YES  |     | NULL    |       |
+| Age      | decimal(3,1) | YES  |     | NULL    |       |
++----------+--------------+------+-----+---------+-------+
+
+DESC Reserves;
++----------+---------+------+-----+---------+-------+
+| Field    | Type    | Null | Key | Default | Extra |
++----------+---------+------+-----+---------+-------+
+| SailorID | int(11) | NO   | PRI | NULL    |       |
+| BoatId   | int(11) | NO   | PRI | NULL    |       |
+| Day      | date    | YES  |     | NULL    |       |
++----------+---------+------+-----+---------+-------+
+
+-- ii. Retrieve all the tuples for each of the relational instances.
+SELECT * FROM Boat;
++--------+-----------+--------+
+| BoatId | Bname     | Bcolor |
++--------+-----------+--------+
+|    101 | Interlake | blue   |
+|    102 | Interlake | red    |
+|    103 | Clipper   | green  |
+|    104 | Marine    | red    |
++--------+-----------+--------+
+
+SELECT * FROM Sailor;
++----------+---------+--------+------+
+| SailorId | Sname   | Rating | Age  |
++----------+---------+--------+------+
+|       22 | Dustin  |      7 | 45.0 |
+|       29 | Brutus  |      1 | 33.0 |
+|       31 | Lubber  |      8 | 55.5 |
+|       32 | Andy    |      8 | 25.5 |
+|       58 | Rusty   |     10 | 35.0 |
+|       64 | Horatio |      7 | 35.0 |
+|       71 | Zorba   |     10 | 16.0 |
+|       74 | Horatio |      9 | 35.0 |
+|       85 | Athesh  |      3 | 25.5 |
+|       95 | Bob     |      3 | 63.5 |
++----------+---------+--------+------+
+
+SELECT * FROM Reserves;
++----------+--------+------------+
+| SailorID | BoatId | Day        |
++----------+--------+------------+
+|       22 |    101 | 2018-10-10 |
+|       22 |    102 | 2018-10-10 |
+|       22 |    103 | 2018-08-10 |
+|       22 |    104 | 2018-07-10 |
+|       31 |    102 | 2018-10-11 |
+|       31 |    103 | 2018-06-11 |
+|       31 |    104 | 2018-12-11 |
+|       64 |    101 | 2018-05-09 |
+|       64 |    102 | 2018-08-09 |
+|       74 |    103 | 2018-08-09 |
++----------+--------+------------+
+
+-- iii. Compute the average age of all sailors.
+SELECT AVG(Age) AS AverageAge FROM Sailor;
++------------+
+| AverageAge |
++------------+
+|   36.90000 |
++------------+
+
+-- iv. Retrieve the names of sailors who have reserved boat 103.
+SELECT Sname FROM Sailor
+WHERE SailorId IN (SELECT SailorId FROM Reserves WHERE BoatId = 103);
++---------+
+| Sname   |
++---------+
+| Dustin  |
+| Lubber  |
+| Horatio |
++---------+
+
+-- v. Retrieve the names of sailors who have reserved a red boat.
+SELECT Sname
+FROM Sailor
+WHERE SailorId IN (
+    SELECT SailorId
+    FROM Reserves
+    WHERE BoatId IN (SELECT BoatId FROM Boat WHERE Bcolor = 'red')
+);
+--- or
+SELECT DISTINCT s.Sname FROM Sailor s
+JOIN Reserves r ON r.SailorId=s.SailorId
+JOIN Boat b ON b.BoatId=r.BoatId
+WHERE b.Bcolor = 'red';
++---------+
+| Sname   |
++---------+
+| Dustin  |
+| Lubber  |
+| Horatio |
++---------+
+
+-- vi. Find the colors of boats reserved by Lubber.
+SELECT DISTINCT Bcolor
+FROM Boat
+WHERE BoatId IN (SELECT BoatId FROM Reserves 
+WHERE SailorId = 
+(SELECT SailorId FROM Sailor WHERE Sname = 'Lubber'));
+
+-- or
+SELECT DISTINCT b.Bcolor FROM Boat b
+JOIN Reserves r ON r.BoatId=b.BoatId
+JOIN Sailor s ON s.SailorId=r.SailorId
+WHERE s.Sname = 'Lubber';
++--------+
+| Bcolor |
++--------+
+| red    |
+| green  |
++--------+
+
+-- vii. Find the names of sailors who have reserved atleast one boat.
+SELECT DISTINCT Sname
+FROM Sailor
+WHERE SailorId IN (SELECT SailorId FROM Reserves);
++---------+
+| Sname   |
++---------+
+| Dustin  |
+| Lubber  |
+| Horatio |
++---------+
+
+-- viii. Find the names of sailors who have reserved a red boat or a green boat.
+SELECT DISTINCT Sname
+FROM Sailor
+WHERE SailorId IN (
+    SELECT SailorId
+    FROM Reserves
+    WHERE BoatId IN (SELECT BoatId 
+	FROM Boat WHERE Bcolor IN ('red', 'green'))
+);
+
+--or
+SELECT DISTINCT s.Sname
+FROM Sailor s
+JOIN Reserves r ON r.SailorId = s.SailorId
+JOIN Boat b ON r.BoatId = b.BoatId
+WHERE b.Bcolor IN ('red','green');
++---------+
+| Sname   |
++---------+
+| Dustin  |
+| Lubber  |
+| Horatio |
++---------+
+
+-- ix. Find the names of sailors who have reserved 
+-- a red boat and a green boat.
+SELECT Sname
+FROM Sailor
+WHERE SailorId IN (
+    SELECT SailorId
+    FROM Reserves
+    WHERE BoatId IN (SELECT BoatId 
+	FROM Boat WHERE Bcolor = 'red')
+)
+AND SailorId IN (
+    SELECT SailorId
+    FROM Reserves
+    WHERE BoatId IN (SELECT BoatId 
+	FROM Boat WHERE Bcolor = 'green')
+);
+
+--or
+SELECT S.Sname
+FROM Sailor S
+WHERE S.SailorId IN (
+    SELECT R1.SailorId
+    FROM Reserves R1
+    JOIN Boat B1 ON R1.BoatId = B1.BoatId
+    WHERE B1.Bcolor = 'red'
+)
+AND S.SailorId IN (
+    SELECT R2.SailorId
+    FROM Reserves R2
+    JOIN Boat B2 ON R2.BoatId = B2.BoatId
+    WHERE B2.Bcolor = 'green'
+);
+
++--------+
+| Sname  |
++--------+
+| Dustin |
+| Lubber |
++--------+
+
+-- x. Find the average age of sailors for each 
+-- rating level that has at least two sailors.
+SELECT Rating, AVG(Age) AS AverageAge
+FROM Sailor
+GROUP BY Rating
+HAVING COUNT(*) >= 2;
++--------+------------+
+| Rating | AverageAge |
++--------+------------+
+|      3 |   44.50000 |
+|      7 |   40.00000 |
+|      8 |   40.50000 |
+|     10 |   25.50000 |
++--------+------------+
+
+-- xi. Find the name and the age of the youngest sailor.
+SELECT Sname, Age
+FROM Sailor
+ORDER BY Age
+LIMIT 1;
++-------+------+
+| Sname | Age  |
++-------+------+
+| Zorba | 16.0 |
++-------+------+
+
+-- xii. Update all the sailors’ age by adding 0.5 year. 
+UPDATE Sailor
+SET Age = Age + 0.5;
+
+Rows matched: 10  Changed: 10  Warnings: 0
+
+SELECT Sname, Age FROM Sailor;
++---------+------+
+| Sname   | Age  |
++---------+------+
+| Dustin  | 45.5 |
+| Brutus  | 33.5 |
+| Lubber  | 56.0 |
+| Andy    | 26.0 |
+| Rusty   | 35.5 |
+| Horatio | 35.5 |
+| Zorba   | 16.5 |
+| Horatio | 35.5 |
+| Athesh  | 26.0 |
+| Bob     | 64.0 |
++---------+------+
